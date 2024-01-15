@@ -786,7 +786,6 @@ yolact_resnet101_g235_config_base = yolact_base_config.copy({
     'dataset': g235_dataset,
     'num_classes': len(g235_dataset.class_names) + 1,
 
-    # 'backbone': resnet101_backbone,
     'backbone': resnet101_backbone.copy({
         'pred_scales': [[1]]*8,
         'pred_aspect_ratios': [ [[0.66685089, 1.7073535, 0.87508774, 1.16524493, 0.49059086]] ] * 8,
