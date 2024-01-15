@@ -20,10 +20,13 @@ import torch.utils.data as data
 import numpy as np
 import argparse
 import datetime
+import warnings
+
 
 # Oof
 import eval as eval_script
 
+warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
@@ -249,6 +252,7 @@ def train():
     data_loader = data.DataLoader(dataset, args.batch_size,
                                   num_workers=args.num_workers,
                                   shuffle=True, collate_fn=detection_collate,
+                                  generator=torch.Generator(device='cuda'),
                                   pin_memory=True)
     
     

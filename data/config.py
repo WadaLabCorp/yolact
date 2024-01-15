@@ -56,7 +56,8 @@ COCO_LABEL_MAP = { 1:  1,  2:  2,  3:  3,  4:  4,  5:  5,  6:  6,  7:  7,  8:  8
 
 
 
-# ----------------------- CONFIG CLASS ----------------------- #
+# ----------------------- CONFIG CLASS ----------------------- # {{{
+
 
 class Config(object):
     """
@@ -100,10 +101,10 @@ class Config(object):
             print(k, ' = ', v)
 
 
+# }}}
 
+# ----------------------- DATASETS ----------------------- # {{{
 
-
-# ----------------------- DATASETS ----------------------- #
 
 dataset_base = Config({
     'name': 'Base Dataset',
@@ -171,12 +172,10 @@ pascal_sbd_dataset = dataset_base.copy({
 
     'class_names': PASCAL_CLASSES,
 })
+# }}}
 
+# ----------------------- TRANSFORMS ----------------------- # {{{
 
-
-
-
-# ----------------------- TRANSFORMS ----------------------- #
 
 resnet_transform = Config({
     'channel_order': 'RGB',
@@ -202,10 +201,9 @@ darknet_transform = Config({
 })
 
 
+# }}}
 
-
-
-# ----------------------- BACKBONES ----------------------- #
+# ----------------------- BACKBONES ----------------------- # {{{
 
 backbone_base = Config({
     'name': 'Base Backbone',
@@ -298,11 +296,9 @@ vgg16_backbone = backbone_base.copy({
     'pred_aspect_ratios': [ [[1], [1, sqrt(2), 1/sqrt(2), sqrt(3), 1/sqrt(3)][:n]] for n in [3, 5, 5, 5, 3, 3] ],
 })
 
+#}}}
 
-
-
-
-# ----------------------- MASK BRANCH TYPES ----------------------- #
+# ----------------------- MASK BRANCH TYPES ----------------------- # {{{
 
 mask_type = Config({
     # Direct produces masks directly as the output of each pred module.
@@ -365,10 +361,10 @@ mask_type = Config({
 })
 
 
+# }}}
 
+# ----------------------- ACTIVATION FUNCTIONS ----------------------- # {{{
 
-
-# ----------------------- ACTIVATION FUNCTIONS ----------------------- #
 
 activation_func = Config({
     'tanh':    torch.tanh,
@@ -378,11 +374,10 @@ activation_func = Config({
     'none':    lambda x: x,
 })
 
+# }}}
 
+# ----------------------- FPN DEFAULTS ----------------------- # {{{
 
-
-
-# ----------------------- FPN DEFAULTS ----------------------- #
 
 fpn_base = Config({
     # The number of features to have in each FPN layer
@@ -408,11 +403,9 @@ fpn_base = Config({
     'relu_pred_layers': True,
 })
 
+# }}}
 
-
-
-
-# ----------------------- CONFIG DEFAULTS ----------------------- #
+# ----------------------- CONFIG DEFAULTS ----------------------- # {{{
 
 coco_base_config = Config({
     'dataset': coco2014_dataset,
@@ -647,11 +640,9 @@ coco_base_config = Config({
     'maskious_to_train': -1,
 })
 
+#}}}
 
-
-
-
-# ----------------------- YOLACT v1.0 CONFIGS ----------------------- #
+# ----------------------- YOLACT v1.0 CONFIGS ----------------------- # {{{
 
 yolact_base_config = coco_base_config.copy({
     'name': 'yolact_base',
@@ -757,6 +748,7 @@ yolact_resnet50_pascal_config = yolact_resnet50_config.copy({
     # Dataset stuff
     'dataset': pascal_sbd_dataset,
     'num_classes': len(pascal_sbd_dataset.class_names) + 1,
+    
 
     'max_iter': 120000,
     'lr_steps': (60000, 100000),
@@ -767,7 +759,54 @@ yolact_resnet50_pascal_config = yolact_resnet50_config.copy({
     })
 })
 
-# ----------------------- YOLACT++ CONFIGS ----------------------- #
+# }}}
+
+# ----------------------- G235 CONFIGS ----------------------- # {{{
+
+
+g235_class_names = ('head','left_front_leg','right_front_leg')
+g235_label_map = { 1: 1, 2: 2, 3: 3 }
+
+g235_dataset = dataset_base.copy({
+    'name': 'COCO 2017',
+    
+    'train_images': '../datasets/20240105_training_jra/images',
+    'train_info': '../datasets/20240105_training_jra/coco.json',
+
+    'valid_images': '../datasets/20240109_training_jra/images',
+    'valid_info': '../datasets/20240109_training_jra/coco.json',
+
+    'class_names': g235_class_names,
+    # 'label_map': g235_label_map
+})
+
+yolact_resnet101_g235_config_base = yolact_base_config.copy({
+    'name': 'g235_config_base',
+
+    'dataset': g235_dataset,
+    'num_classes': len(g235_dataset.class_names) + 1,
+
+    # 'backbone': resnet101_backbone,
+    'backbone': resnet101_backbone.copy({
+        'pred_scales': [[1]]*8,
+        'pred_aspect_ratios': [ [[0.66685089, 1.7073535, 0.87508774, 1.16524493, 0.49059086]] ] * 8,
+    }),
+    # 'has_gt': True,
+
+    # 'fpn': fpn_base.copy({
+    #     'use_conv_downsample': True,
+    #     'num_downsample': 2,
+    # }),
+})
+
+yolact_resnet101_g235_config = yolact_resnet101_g235_config_base.copy({
+    'name': 'g235_config_base',
+})
+
+# }}}
+
+# ----------------------- YOLACT++ CONFIGS ----------------------- # {{{
+
 
 yolact_plus_base_config = yolact_base_config.copy({
     'name': 'yolact_plus_base',
@@ -805,6 +844,7 @@ yolact_plus_resnet50_config = yolact_plus_base_config.copy({
     }),
 })
 
+# }}}
 
 # Default config
 cfg = yolact_base_config.copy()
