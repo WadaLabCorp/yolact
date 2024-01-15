@@ -1,0 +1,3 @@
+[submodule "external/DCNv2"]
+	path = external/DCNv2
+	url = https://github.com/lucasjinreal/DCNv2_latest.git
