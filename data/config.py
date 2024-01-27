@@ -761,49 +761,6 @@ yolact_resnet50_pascal_config = yolact_resnet50_config.copy({
 
 # }}}
 
-# ----------------------- G235 CONFIGS ----------------------- # {{{
-
-
-g235_class_names = ('head','left_front_leg','right_front_leg')
-g235_label_map = { 1: 1, 2: 2, 3: 3 }
-
-g235_dataset = dataset_base.copy({
-    'name': 'COCO 2017',
-    
-    'train_images': '../datasets/20240105_training_jra/images',
-    'train_info': '../datasets/20240105_training_jra/coco.json',
-
-    'valid_images': '../datasets/20240109_training_jra/images',
-    'valid_info': '../datasets/20240109_training_jra/coco.json',
-
-    'class_names': g235_class_names,
-    # 'label_map': g235_label_map
-})
-
-yolact_resnet101_g235_config_base = yolact_base_config.copy({
-    'name': 'g235_config_base',
-
-    'dataset': g235_dataset,
-    'num_classes': len(g235_dataset.class_names) + 1,
-
-    'backbone': resnet101_backbone.copy({
-        'pred_scales': [[1]]*8,
-        'pred_aspect_ratios': [ [[0.66685089, 1.7073535, 0.87508774, 1.16524493, 0.49059086]] ] * 8,
-    }),
-    # 'has_gt': True,
-
-    # 'fpn': fpn_base.copy({
-    #     'use_conv_downsample': True,
-    #     'num_downsample': 2,
-    # }),
-})
-
-yolact_resnet101_g235_config = yolact_resnet101_g235_config_base.copy({
-    'name': 'g235_config_base',
-})
-
-# }}}
-
 # ----------------------- YOLACT++ CONFIGS ----------------------- # {{{
 
 
@@ -845,12 +802,66 @@ yolact_plus_resnet50_config = yolact_plus_base_config.copy({
 
 # }}}
 
+# ----------------------- G235 CONFIGS ----------------------- # {{{
+
+
+sese_class_names = ('head', "right_front_leg", "left_front_leg")
+g235_class_names = ('left_front_leg','right_front_leg','head')
+g235_label_map = { 1: 1, 2: 2, 3: 3 }
+
+sese_20240116_dataset = dataset_base.copy({
+    'name': "sese_20240116",
+    'train_images': '../datasets/20240116_training_sese/images',
+    'train_info': '../datasets/20240116_training_sese/coco.json',
+
+    'valid_images': '../datasets/20240116_training_sese/images',
+    'valid_info': '../datasets/20240116_training_sese/coco.json',
+
+    'class_names': sese_class_names,
+})
+
+g235_dataset = dataset_base.copy({
+    'name': 'COCO 2017',
+    
+    'train_images': '../datasets/20240105_training_jra/images',
+    'train_info': '../datasets/20240105_training_jra/coco.json',
+
+    'valid_images': '../datasets/20240105_training_jra/images',
+    'valid_info': '../datasets/20240105_training_jra/coco.json',
+    # 'valid_images': '../datasets/20240109_training_jra/images',
+    # 'valid_info': '../datasets/20240109_training_jra/coco.json',
+
+    'class_names': g235_class_names,
+    # 'label_map': g235_label_map
+})
+
+yolact_plus_resnet101_g235_config_base = yolact_plus_base_config.copy({
+    'name': 'yolact_plus_resnet101_g235_config_base',
+
+    'dataset': sese_20240116_dataset,
+    'num_classes': len(g235_dataset.class_names) + 1,
+
+    'backbone': resnet101_backbone.copy({
+        'pred_scales': [[1]]*8,
+        'pred_aspect_ratios': [ [[0.66685089, 1.7073535, 0.87508774, 1.16524493, 0.49059086]] ] * 8,
+    }),
+})
+
+g235_config_base = yolact_plus_resnet101_g235_config_base.copy({
+    'name': 'g235_config_base'
+    })
+
+# }}}
+
+
 # Default config
 cfg = yolact_base_config.copy()
 
 def set_cfg(config_name:str):
     """ Sets the active config. Works even if cfg is already imported! """
     global cfg
+
+    print('Loading config', config_name)
 
     # Note this is not just an eval because I'm lazy, but also because it can
     # be used like ssd300_config.copy({'max_size': 400}) for extreme fine-tuning
