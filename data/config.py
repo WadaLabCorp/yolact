@@ -4,7 +4,6 @@ import torch
 
 # for making bounding boxes pretty
 COLORS = (
-    (0, 0, 0),
     (244, 67, 54),
     (233, 30, 99),
     (156, 39, 176),
