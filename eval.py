@@ -401,32 +401,38 @@ def prep_display(
 
     # 馬のクラスID (COCOデータセットで17)
     horse_class_id = 17
-    expand_px = 20  # マスクを拡張するピクセル数
+    expand_px = 1  # マスクを拡張するピクセル数
 
     horse_mask = np.zeros((h, w), dtype=np.uint8)
+    found_horse = False
 
     # 結果をループして馬だけを抽出
     for i in range(len(masks)):
         if classes[i] == horse_class_id:
+            found_horse = True
             mask = masks[i].cpu().numpy().squeeze()
             horse_mask = np.maximum(horse_mask, mask)  # 馬の部分だけを保持
 
-    # マスクの膨張処理
-    kernel = np.ones((expand_px * 2 + 1, expand_px * 2 + 1), np.uint8)
-    final_mask = cv2.dilate(horse_mask.astype(np.uint8), kernel, iterations=1)
+    if found_horse:
+        # マスクの膨張処理
+        kernel = np.ones((expand_px * 2 + 1, expand_px * 2 + 1), np.uint8)
+        final_mask = cv2.dilate(horse_mask.astype(np.uint8), kernel, iterations=1)
 
-    # 馬以外の領域を透明化
-    for i in range(len(masks)):
-        if classes[i] != horse_class_id:
-            mask = masks[i].cpu().numpy().squeeze()
-            final_mask = final_mask * (mask == 0)
+        # 馬以外の領域を透明化
+        for i in range(len(masks)):
+            if classes[i] != horse_class_id:
+                mask = masks[i].cpu().numpy().squeeze()
+                final_mask = final_mask * (mask == 0)
 
-    # 最終マスクのアルファチャンネルを作成
-    alpha_channel = (final_mask * 255).astype(np.uint8)
+        # 最終マスクのアルファチャンネルを作成
+        alpha_channel = (final_mask * 255).astype(np.uint8)
 
-    # 画像にアルファチャネルを追加
-    b, g, r = cv2.split(img_numpy)
-    img_numpy = cv2.merge((b, g, r, alpha_channel))
+        # 画像にアルファチャネルを追加
+        b, g, r = cv2.split(img_numpy)
+        img_numpy = cv2.merge((b, g, r, alpha_channel))
+
+    else:
+        print("horse not found!.")
 
     if args.display_fps:
         # Draw the text on the CPU
@@ -878,7 +884,6 @@ def evalimage(net: Yolact, path: str, save_path: str = None):
     batch = FastBaseTransform()(frame.unsqueeze(0))
     preds = net(batch)
 
-    print(path)
     img_numpy = prep_display(preds, frame, None, None, undo_transform=False)
 
     if save_path is None:
