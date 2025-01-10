@@ -401,7 +401,8 @@ def prep_display(
 
     # 馬のクラスID (COCOデータセットで17)
     horse_class_id = 17
-    expand_px = 1  # マスクを拡張するピクセル数
+    human_class_id = 0
+    expand_px = 4  # マスクを拡張するピクセル数
 
     horse_mask = np.zeros((h, w), dtype=np.uint8)
     found_horse = False
@@ -416,23 +417,29 @@ def prep_display(
     if found_horse:
         # マスクの膨張処理
         kernel = np.ones((expand_px * 2 + 1, expand_px * 2 + 1), np.uint8)
-        final_mask = cv2.dilate(horse_mask.astype(np.uint8), kernel, iterations=1)
+        horse_mask = cv2.dilate(horse_mask.astype(np.uint8), kernel, iterations=1)
+    else:
+        # 全領域を対象
+        horse_mask = np.ones((h, w), dtype=np.uint8)
 
         # 馬以外の領域を透明化
-        for i in range(len(masks)):
-            if classes[i] != horse_class_id:
-                mask = masks[i].cpu().numpy().squeeze()
-                final_mask = final_mask * (mask == 0)
+        # for i in range(len(masks)):
+        # if classes[i] != horse_class_id:
+        # mask = masks[i].cpu().numpy().squeeze()
+        # horse_mask = horse_mask * (mask == 0)
 
-        # 最終マスクのアルファチャンネルを作成
-        alpha_channel = (final_mask * 255).astype(np.uint8)
+    # 人間の領域を透明化
+    for i in range(len(masks)):
+        if classes[i] == human_class_id:
+            mask = masks[i].cpu().numpy().squeeze()
+            horse_mask = horse_mask * (mask == 0)
 
-        # 画像にアルファチャネルを追加
-        b, g, r = cv2.split(img_numpy)
-        img_numpy = cv2.merge((b, g, r, alpha_channel))
+    # 最終マスクのアルファチャンネルを作成
+    alpha_channel = (horse_mask * 255).astype(np.uint8)
 
-    else:
-        print("horse not found!.")
+    # 画像にアルファチャネルを追加
+    b, g, r = cv2.split(img_numpy)
+    img_numpy = cv2.merge((b, g, r, alpha_channel))
 
     if args.display_fps:
         # Draw the text on the CPU
