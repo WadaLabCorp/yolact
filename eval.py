@@ -403,6 +403,7 @@ def prep_display(
     horse_class_id = 17
     human_class_id = 0
     expand_px = 4  # マスクを拡張するピクセル数
+    kernel = np.ones((expand_px * 2 + 1, expand_px * 2 + 1), np.uint8)
 
     horse_mask = np.zeros((h, w), dtype=np.uint8)
     found_horse = False
@@ -416,7 +417,6 @@ def prep_display(
 
     if found_horse:
         # マスクの膨張処理
-        kernel = np.ones((expand_px * 2 + 1, expand_px * 2 + 1), np.uint8)
         horse_mask = cv2.dilate(horse_mask.astype(np.uint8), kernel, iterations=1)
     else:
         # 全領域を対象
@@ -432,6 +432,7 @@ def prep_display(
     for i in range(len(masks)):
         if classes[i] == human_class_id:
             mask = masks[i].cpu().numpy().squeeze()
+            mask = cv2.dilate(mask.astype(np.uint8), kernel, iterations=1)
             horse_mask = horse_mask * (mask == 0)
 
     # 最終マスクのアルファチャンネルを作成
